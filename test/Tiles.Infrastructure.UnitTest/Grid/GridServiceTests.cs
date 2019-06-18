@@ -9,6 +9,8 @@ namespace Tiles.Infrastructure.UnitTest.Grid
 {
   public class GridServiceTests
   {
+    private const int TileWidth = 100;
+
     [Fact]
     public void Slice_Layout_With_No_Area()
     {
@@ -18,7 +20,7 @@ namespace Tiles.Infrastructure.UnitTest.Grid
       var settings = new Mock<IGridServiceSettings>();
 
       var sut = new GridService(settings.Object);
-      var result = sut.Slice(layout);
+      var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements();
 
       elements.Should().HaveCount(0);
@@ -32,7 +34,7 @@ namespace Tiles.Infrastructure.UnitTest.Grid
       var settings = new Mock<IGridServiceSettings>();
 
       var sut = new GridService(settings.Object);
-      var result = sut.Slice(layout);
+      var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements().ToArray();
 
       elements.Should().HaveCount(1);
@@ -49,7 +51,7 @@ namespace Tiles.Infrastructure.UnitTest.Grid
       var settings = new Mock<IGridServiceSettings>();
 
       var sut = new GridService(settings.Object);
-      var result = sut.Slice(layout);
+      var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements();
 
       elements.Should().HaveCount(1);
@@ -66,13 +68,27 @@ namespace Tiles.Infrastructure.UnitTest.Grid
       var settings = new Mock<IGridServiceSettings>();
 
       var sut = new GridService(settings.Object);
-      var result = sut.Slice(layout);
+      var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements();
 
       elements.Should().HaveCount(1);
       elements.First().Coordinate.X.Should().Be(0);
       elements.First().Coordinate.Y.Should().Be(0);
       elements.First().Value.Should().BeEquivalentTo(layout);
+    }
+
+    [Fact]
+    public void Slice_Layout_With_Area_Same_Size_As_Two_Tiles()
+    {
+      const string inputPath = @"./Layouts/04.bmp";
+      var layout = Image.FromFile(inputPath);
+      var settings = new Mock<IGridServiceSettings>();
+
+      var sut = new GridService(settings.Object);
+      var result = sut.Slice(layout, TileWidth);
+      var elements = result.GetElements();
+
+      elements.Should().HaveCount(3);
     }
   }
 }

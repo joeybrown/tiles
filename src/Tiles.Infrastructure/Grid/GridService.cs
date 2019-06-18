@@ -4,12 +4,13 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace Tiles.Infrastructure.Grid
 {
   public interface IGridService
   {
-    Grid Slice(Image layout);
+    Grid Slice(Image layout, int tileHeight);
   }
 
   public class GridService : IGridService
@@ -50,7 +51,21 @@ namespace Tiles.Infrastructure.Grid
       return layout.Clone(rectangle, layout.PixelFormat);
     }
 
-    public Grid Slice(Image layout)
+    public IEnumerable<int> SliceBackward(int start, int step) => 
+      start <= 0 ? new List<int>() : new List<int>{start}.Concat(SliceBackward(start-step, step)).ToList();
+
+    public IEnumerable<int> SliceForward(int start, int step, int limit) =>
+      start >= limit ? new List<int>() : new List<int> {start}.Concat(SliceForward(start + step, step, limit));
+
+    public int[] SliceByTileWidth(int limit, int tileWidth)
+    {
+      var midPoint = limit / 2;
+      var lowerSet = new []{0}.Concat( SliceBackward(midPoint - (tileWidth / 2), tileWidth).ToArray());
+      var upperSet = SliceForward(midPoint + (tileWidth / 2), tileWidth, limit).ToArray().Concat(new []{limit});
+      return lowerSet.Concat(upperSet).ToArray();
+    }
+
+    public Grid Slice(Image layout, int tileWidth)
     {
       var bitmapLayout = new Bitmap(layout);
       var coordinates = ToCoordinates(bitmapLayout).ToArray();
@@ -61,8 +76,21 @@ namespace Tiles.Infrastructure.Grid
       }
 
       var trimmedLayout = GetTrimmedArea(bitmapLayout, coordinates);
-      var coordinate = new Coordinate(0, 0);
-      var elements = new[] {new GridElement(coordinate, layout)};
+
+      var xSlices = SliceByTileWidth(trimmedLayout.Width, tileWidth);
+      var ySlices = SliceByTileWidth(trimmedLayout.Height, tileWidth);
+
+      IEnumerable<GridElement> elements;
+
+      if (!xSlices.Any() && !ySlices.Any())
+      {
+        var coordinate = new Coordinate(0, 0);
+        elements = new[] { new GridElement(coordinate, layout) };
+        return new Grid(elements);
+      }
+
+      var blah = new Coordinate(0, 0);
+      elements = new[] { new GridElement(blah, layout) };
       return new Grid(elements);
     }
   }
