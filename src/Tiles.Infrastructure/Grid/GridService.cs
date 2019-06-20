@@ -1,10 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 
 namespace Tiles.Infrastructure.Grid
 {
@@ -80,17 +76,42 @@ namespace Tiles.Infrastructure.Grid
       var xSlices = SliceByTileWidth(trimmedLayout.Width, tileWidth);
       var ySlices = SliceByTileWidth(trimmedLayout.Height, tileWidth);
 
-      IEnumerable<GridElement> elements;
+      var xSets = GetSets(xSlices);
+      var ySets = GetSets(ySlices);
 
-      if (!xSlices.Any() && !ySlices.Any())
+      var grid = BuildGrid(xSets, ySets, layout);
+      return grid;
+    }
+
+    private static IEnumerable<(int start, int stop)> GetSets(IReadOnlyCollection<int> slices)
+    {
+      if (slices.Count <= 1)
       {
-        var coordinate = new Coordinate(0, 0);
-        elements = new[] { new GridElement(coordinate, layout) };
-        return new Grid(elements);
+        return new (int start, int stop)[0];
       }
 
-      var blah = new Coordinate(0, 0);
-      elements = new[] { new GridElement(blah, layout) };
+      (int start, int stop) newVal = (slices.First(), slices.Skip(1).First());
+      return new[] {newVal}.Concat(GetSets(slices.Skip(1).ToArray()));
+    }
+
+    private static Image SliceImage(int xRectStart, int xRectStop, int yRectStart, int yRectStop, Image image)
+    {
+      var bitmap = new Bitmap(image);
+      var rectWidth = (xRectStop - xRectStart);
+      var rectHeight = (yRectStop - yRectStart);
+      var rectangle = new Rectangle(xRectStart, yRectStart, rectWidth, rectHeight);
+      return bitmap.Clone(rectangle, bitmap.PixelFormat);
+    }
+    
+    private static Grid BuildGrid(IEnumerable<(int start, int stop)> xSets, IEnumerable<(int start, int stop)> ySets, Image image)
+    {
+      var elements = xSets.SelectMany((x, xi) =>
+        ySets.Select((y, yi) =>
+        {
+          var gridElementValue = SliceImage(x.start, x.stop, y.start, y.stop, image);
+          var gridElementCoordinates = new Coordinate(xi, yi);
+          return new GridElement(gridElementCoordinates, gridElementValue);
+        }));
       return new Grid(elements);
     }
   }

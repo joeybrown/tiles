@@ -6,7 +6,7 @@ namespace Tiles.Infrastructure.Grid
   public class Grid
   {
 
-    private GridElement[] Elements { get; set; } = new GridElement[0];
+    private GridElement[] Elements { get; } = new GridElement[0];
 
     public Grid(IEnumerable<GridElement> elements)
     {
@@ -17,9 +17,7 @@ namespace Tiles.Infrastructure.Grid
     {
     }
 
-    public IEnumerable<GridElement> GetElements()
-    {
-      return Elements;
-    }
+    public IEnumerable<GridElement> GetElements() => 
+      Elements.OrderBy(x=>x.Coordinate.X).ThenBy(x=>x.Coordinate.Y);
   }
 }
