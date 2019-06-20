@@ -5,7 +5,6 @@ namespace Tiles.Infrastructure.Grid
 {
   public class Grid
   {
-
     private GridElement[] Elements { get; } = new GridElement[0];
 
     public Grid(IEnumerable<GridElement> elements)

@@ -149,5 +149,18 @@ namespace Tiles.Infrastructure.UnitTest.Grid
       new Bitmap(thirdElement.Value).Height.Should().Be(50);
       new Bitmap(thirdElement.Value).Width.Should().Be(100);
     }
+
+    [Fact]
+    public void Slice_Layout_With_Area_Shaped_Like_A_T()
+    {
+      const string inputPath = @"./Layouts/06.bmp";
+      var layout = Image.FromFile(inputPath);
+      var settings = new Mock<IGridServiceSettings>();
+
+      var sut = new GridService(settings.Object);
+      var result = sut.Slice(layout, TileWidth);
+      var elements = result.GetElements().ToArray();
+      elements.Should().HaveCount(9);
+    }
   }
 }

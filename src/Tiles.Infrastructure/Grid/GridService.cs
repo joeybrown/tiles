@@ -6,6 +6,15 @@ namespace Tiles.Infrastructure.Grid
 {
   public interface IGridService
   {
+    /// <summary>
+    /// This method slices a given layout by the tile height.
+    /// <para>If the layout is larger than the tile height, there will
+    /// be a full tile in the center of the layout.</para>
+    /// <para>This assumes a square tile.</para>
+    /// </summary>
+    /// <param name="layout"></param>
+    /// <param name="tileHeight"></param>
+    /// <returns></returns>
     Grid Slice(Image layout, int tileHeight);
   }
 
@@ -20,7 +29,7 @@ namespace Tiles.Infrastructure.Grid
 
     private const string WhiteValue = "ffffffff";
 
-    public static IEnumerable<ICoordinate> ToCoordinates(Bitmap layout)
+    private static IEnumerable<ICoordinate> ToCoordinates(Bitmap layout)
     {
       foreach (var x in Enumerable.Range(0, layout.Width))
       {
@@ -34,7 +43,7 @@ namespace Tiles.Infrastructure.Grid
       }
     }
 
-    public static Bitmap GetTrimmedArea(Bitmap layout, IEnumerable<ICoordinate> coordinates)
+    private static Bitmap GetTrimmedArea(Bitmap layout, IEnumerable<ICoordinate> coordinates)
     {
       var coloredCoordinates = coordinates.Where(x => x is ColoredCoordinate).ToArray();
       var xValues = coloredCoordinates.Select(x => x.X).ToArray();
@@ -47,13 +56,13 @@ namespace Tiles.Infrastructure.Grid
       return layout.Clone(rectangle, layout.PixelFormat);
     }
 
-    public IEnumerable<int> SliceBackward(int start, int step) => 
+    private static IEnumerable<int> SliceBackward(int start, int step) => 
       start <= 0 ? new List<int>() : new List<int>{start}.Concat(SliceBackward(start-step, step)).ToList();
 
-    public IEnumerable<int> SliceForward(int start, int step, int limit) =>
+    private static IEnumerable<int> SliceForward(int start, int step, int limit) =>
       start >= limit ? new List<int>() : new List<int> {start}.Concat(SliceForward(start + step, step, limit));
 
-    public int[] SliceByTileWidth(int limit, int tileWidth)
+    private static int[] SliceByTileWidth(int limit, int tileWidth)
     {
       var midPoint = limit / 2;
       var lowerSet = new []{0}.Concat( SliceBackward(midPoint - (tileWidth / 2), tileWidth).ToArray());
@@ -61,6 +70,7 @@ namespace Tiles.Infrastructure.Grid
       return lowerSet.Concat(upperSet).ToArray();
     }
 
+    /// <inheritdoc cref="IGridService.Slice"/>
     public Grid Slice(Image layout, int tileWidth)
     {
       var bitmapLayout = new Bitmap(layout);
