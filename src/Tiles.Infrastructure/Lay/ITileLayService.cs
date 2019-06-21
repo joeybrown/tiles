@@ -1,48 +1,50 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Tiles.Infrastructure.Grid;
 
 namespace Tiles.Infrastructure.Lay
 {
   public interface ITileLayService
   {
-    Task<Image> LayTile(Grid.Grid grid);
+    Bitmap LayTile(GridElement[] elements);
+
   }
 
   public class TileLayService : ITileLayService
   {
-    public static void CopyRegionIntoImage(Bitmap srcBitmap, Rectangle srcRegion, ref Bitmap destBitmap, Rectangle destRegion)
+    public static Bitmap CopyRegionIntoImage(Bitmap srcBitmap, Rectangle srcRegion, Bitmap destBitmap, Rectangle destRegion)
     {
       using (var grD = Graphics.FromImage(destBitmap))
       {
         grD.DrawImage(srcBitmap, destRegion, srcRegion, GraphicsUnit.Pixel);
       }
+
+      return destBitmap;
     }
 
-    /// <inheritdoc />
-    public async Task<Image> LayTile(Grid.Grid grid)
+    public Bitmap LayTile(GridElement[] gridElements)
     {
-      var elements = grid.GetElements().ToArray();
-      if (!elements.Any())
-        throw new Exception("No tiles to lay. Cannot return empty image");
-      var tileWidth = new Bitmap(elements.First().Value).Width;
-      var width = elements.Select(x => x.Coordinate.X).Max() * tileWidth;
-      var height = elements.Select(x => x.Coordinate.Y).Max() * tileWidth;
-      var image = new Bitmap(width, height);
-      var result = await LayTile(elements, tileWidth, image);
-      return result;
+      var width = gridElements.Max(x=>x.Coordinate.X);
+      var height = gridElements.Max(x=>x.Coordinate.Y);
+      var collector = new Bitmap(width, height);
+      return LayTile(gridElements, collector);
     }
 
-    public async Task<Image> LayTile(IEnumerable<GridElement> gridElements, int tileWidth, Image collector)
+    public Bitmap LayTile(GridElement[] gridElements, Bitmap collector)
     {
       if (!gridElements.Any())
         return collector;
-      await Task.Delay(500);
 
-    };
+      var element = gridElements.First();
+
+      var srcRectangle = new Rectangle(0, 0, element.Value.Width, element.Value.Height);
+
+      var destRectWidth = element.Coordinate.X + element.Value.Width;
+      var destRectHeight = element.Coordinate.Y + element.Value.Height;
+      var destRectangle = new Rectangle(element.Coordinate.X, element.Coordinate.Y, destRectWidth, destRectHeight);
+
+      var newCollector = CopyRegionIntoImage(element.Value, srcRectangle, collector, destRectangle);
+      return LayTile(gridElements.Skip(1).ToArray(), newCollector);
+    }
   }
 }

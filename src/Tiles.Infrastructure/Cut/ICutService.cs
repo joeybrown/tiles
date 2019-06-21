@@ -5,70 +5,96 @@ namespace Tiles.Infrastructure.Cut
 {
   public interface ICutService
   {
-    /// <summary>
-    /// Tile and layout should be exactly the same size
-    /// </summary>
-    /// <param name="tile"></param>
-    /// <returns></returns>
-    Task<Image> Cut(Image tile);
+    Task<Image> CutRequest(Image layout);
   }
 
-  public abstract class CutService
+  public interface ICutServiceFactory
   {
-    public static ICutService GetCutService(Image layout)
+    ICutService Build(Image layout);
+  }
+
+  public class CutServiceFactory : ICutServiceFactory
+  {
+    private readonly IJigCutService _jigCutService;
+    private readonly ILaserCutService _laserCutService;
+    private readonly IRandomFactory _randomFactory;
+    private readonly IScoreCutService _scoreCutService;
+
+    public CutServiceFactory(
+      IRandomFactory randomFactory,
+      IScoreCutService scoreCutService,
+      IJigCutService jigCutService,
+      ILaserCutService laserCutService)
     {
-      return new ScoreCutService(layout);
+      _randomFactory = randomFactory;
+      _scoreCutService = scoreCutService;
+      _jigCutService = jigCutService;
+      _laserCutService = laserCutService;
+    }
+
+    private ICutService[] CutServices => new[]
+    {
+      _scoreCutService,
+      _scoreCutService,
+      _scoreCutService,
+      _scoreCutService,
+      _jigCutService,
+      _jigCutService,
+      (ICutService) _laserCutService
+    };
+
+    public ICutService Build(Image layout)
+    {
+      var index = _randomFactory.GetRandomNumber(CutServices.Length);
+      return CutServices[index];
     }
   }
 
-  public class ScoreCutService : ICutService
+  public interface IScoreCutService : ICutService
   {
-    private readonly Image _layout;
+  }
 
-    public ScoreCutService(Image layout)
+  public class ScoreCutService : IScoreCutService
+  {
+    private readonly Image _tileDesign;
+
+    public ScoreCutService(Image tileDesign)
     {
-      _layout = layout;
+      _tileDesign = tileDesign;
     }
 
-    public async Task<Image> Cut(Image tile)
+
+
+    public async Task<Image> CutRequest(Image tile)
     {
       await Task.Delay(2000);
-      var cutTile = new Bitmap(tile.Height, tile.Width);
-      return cutTile;
+      return new Bitmap(tile);
     }
   }
 
-  public class JigCutService : ICutService
+  public interface IJigCutService : ICutService
   {
-    private readonly Image _layout;
+  }
 
-    public JigCutService(Image layout)
-    {
-      _layout = layout;
-    }
-
-    public async Task<Image> Cut(Image tile)
+  public class JigCutCutService : IJigCutService
+  {
+    public async Task<Image> CutRequest(Image tile)
     {
       await Task.Delay(4000);
-      var cutTile = new Bitmap(tile.Height, tile.Width);
-      return cutTile;
+      return new Bitmap(tile);
     }
   }
 
-  public class LaserCutService : ICutService
+  public interface ILaserCutService : ICutService
   {
-    private readonly Image _layout;
+  }
 
-    public LaserCutService(Image layout)
-    {
-      _layout = layout;
-    }
-
-    public async Task<Image> Cut(Image tile)
+  public class LaserCutService : ILaserCutService
+  {
+    public async Task<Image> CutRequest(Image tile)
     {
       await Task.Delay(8000);
-      var cutTile = new Bitmap(tile.Height, tile.Width);
-      return cutTile;
+      return new Bitmap(tile);
     }
   }
 }

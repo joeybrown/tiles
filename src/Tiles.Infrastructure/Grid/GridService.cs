@@ -104,7 +104,7 @@ namespace Tiles.Infrastructure.Grid
       return new[] {newVal}.Concat(GetSets(slices.Skip(1).ToArray()));
     }
 
-    private static Image SliceImage(int xRectStart, int xRectStop, int yRectStart, int yRectStop, Image image)
+    private static Bitmap SliceImage(int xRectStart, int xRectStop, int yRectStart, int yRectStop, Image image)
     {
       var bitmap = new Bitmap(image);
       var rectWidth = (xRectStop - xRectStart);
@@ -115,11 +115,11 @@ namespace Tiles.Infrastructure.Grid
     
     private static Grid BuildGrid(IEnumerable<(int start, int stop)> xSets, IEnumerable<(int start, int stop)> ySets, Image image)
     {
-      var elements = xSets.SelectMany((x, xi) =>
-        ySets.Select((y, yi) =>
+      var elements = xSets.SelectMany(x =>
+        ySets.Select(y =>
         {
           var gridElementValue = SliceImage(x.start, x.stop, y.start, y.stop, image);
-          var gridElementCoordinates = new Coordinate(xi, yi);
+          var gridElementCoordinates = new Coordinate(x.start, y.start);
           return new GridElement(gridElementCoordinates, gridElementValue);
         }));
       return new Grid(elements);

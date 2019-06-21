@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Tiles.Infrastructure.Grid
+﻿namespace Tiles.Infrastructure.Grid
 {
   public interface ICoordinate
   {
@@ -12,37 +8,37 @@ namespace Tiles.Infrastructure.Grid
 
   public class Coordinate : ICoordinate
   {
-    public int X { get; set; }
-    public int Y { get; set; }
-
     public Coordinate(int x, int y)
     {
       X = x;
       Y = y;
     }
+
+    public int X { get; set; }
+    public int Y { get; set; }
   }
 
   public class ColoredCoordinate : ICoordinate
   {
-    public int X { get; set; }
-    public int Y { get; set; }
-
     public ColoredCoordinate(int x, int y)
     {
       X = x;
       Y = y;
     }
+
+    public int X { get; set; }
+    public int Y { get; set; }
   }
 
   public class EmptyCoordinate : ICoordinate
   {
-    public int X { get; set; }
-    public int Y { get; set; }
-
     public EmptyCoordinate(int x, int y)
     {
       X = x;
       Y = y;
     }
+
+    public int X { get; set; }
+    public int Y { get; set; }
   }
 }
