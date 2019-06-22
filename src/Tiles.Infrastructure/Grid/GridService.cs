@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -12,35 +13,29 @@ namespace Tiles.Infrastructure.Grid
     /// be a full tile in the center of the layout.</para>
     /// <para>This assumes a square tile.</para>
     /// </summary>
-    /// <param name="layout"></param>
-    /// <param name="tileHeight"></param>
-    /// <returns></returns>
     Grid Slice(Image layout, int tileHeight);
   }
 
   public class GridService : IGridService
   {
-    private readonly IGridServiceSettings _settings;
-
-    public GridService(IGridServiceSettings settings)
-    {
-      _settings = settings;
-    }
-
-    private const string WhiteValue = "ffffffff";
-
     private static IEnumerable<ICoordinate> ToCoordinates(Bitmap layout)
     {
-      foreach (var x in Enumerable.Range(0, layout.Width))
+      List<ICoordinate> IfWhite(List<ICoordinate> coordinates, int x, int y)
       {
-        foreach (var y in Enumerable.Range(0, layout.Height))
-        {
-          var color = layout.GetPixel(x, y);
-          if (color.Name != WhiteValue)
-            yield return new ColoredCoordinate(x, y);
-          yield return new EmptyCoordinate(x, y);
-        }
+        coordinates.Add(new EmptyCoordinate(x, y));
+        return coordinates;
       }
+
+      List<ICoordinate> IfColored(List<ICoordinate> coordinates, int x, int y)
+      {
+        coordinates.Add(new ColoredCoordinate(x, y));
+        return coordinates;
+      }
+
+      var accumulator = new List<ICoordinate>();
+
+
+      return layout.ForEachPixel(accumulator, IfWhite, IfColored);
     }
 
     private static Bitmap GetTrimmedArea(Bitmap layout, IEnumerable<ICoordinate> coordinates)

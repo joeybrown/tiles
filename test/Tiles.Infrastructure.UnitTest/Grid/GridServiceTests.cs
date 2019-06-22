@@ -17,9 +17,7 @@ namespace Tiles.Infrastructure.UnitTest.Grid
       const string inputPath = @"./Layouts/00.bmp";
       var layout = Image.FromFile(inputPath);
 
-      var settings = new Mock<IGridServiceSettings>();
-
-      var sut = new GridService(settings.Object);
+      var sut = new GridService();
       var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements();
 
@@ -31,9 +29,8 @@ namespace Tiles.Infrastructure.UnitTest.Grid
     {
       const string inputPath = @"./Layouts/01.bmp";
       var layout = Image.FromFile(inputPath);
-      var settings = new Mock<IGridServiceSettings>();
 
-      var sut = new GridService(settings.Object);
+      var sut = new GridService();
       var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements().ToArray();
 
@@ -49,9 +46,8 @@ namespace Tiles.Infrastructure.UnitTest.Grid
     {
       const string inputPath = @"./Layouts/02.bmp";
       var layout = Image.FromFile(inputPath);
-      var settings = new Mock<IGridServiceSettings>();
 
-      var sut = new GridService(settings.Object);
+      var sut = new GridService();
       var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements().ToArray();
 
@@ -67,9 +63,8 @@ namespace Tiles.Infrastructure.UnitTest.Grid
     {
       const string inputPath = @"./Layouts/03.bmp";
       var layout = Image.FromFile(inputPath);
-      var settings = new Mock<IGridServiceSettings>();
 
-      var sut = new GridService(settings.Object);
+      var sut = new GridService();
       var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements().ToArray();
 
@@ -85,9 +80,8 @@ namespace Tiles.Infrastructure.UnitTest.Grid
     {
       const string inputPath = @"./Layouts/04.bmp";
       var layout = Image.FromFile(inputPath);
-      var settings = new Mock<IGridServiceSettings>();
 
-      var sut = new GridService(settings.Object);
+      var sut = new GridService();
       var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements().ToArray();
       elements.Should().HaveCount(3);
@@ -99,10 +93,10 @@ namespace Tiles.Infrastructure.UnitTest.Grid
       firstElement.Coordinate.X.Should().Be(0);
       firstElement.Coordinate.Y.Should().Be(0);
 
-      secondElement.Coordinate.X.Should().Be(1);
+      secondElement.Coordinate.X.Should().Be(50);
       secondElement.Coordinate.Y.Should().Be(0);
 
-      thirdElement.Coordinate.X.Should().Be(2);
+      thirdElement.Coordinate.X.Should().Be(150);
       thirdElement.Coordinate.Y.Should().Be(0);
 
       new Bitmap(firstElement.Value).Height.Should().Be(100);
@@ -120,9 +114,8 @@ namespace Tiles.Infrastructure.UnitTest.Grid
     {
       const string inputPath = @"./Layouts/05.bmp";
       var layout = Image.FromFile(inputPath);
-      var settings = new Mock<IGridServiceSettings>();
 
-      var sut = new GridService(settings.Object);
+      var sut = new GridService();
       var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements().ToArray();
       elements.Should().HaveCount(3);
@@ -135,10 +128,10 @@ namespace Tiles.Infrastructure.UnitTest.Grid
       firstElement.Coordinate.Y.Should().Be(0);
 
       secondElement.Coordinate.X.Should().Be(0);
-      secondElement.Coordinate.Y.Should().Be(1);
+      secondElement.Coordinate.Y.Should().Be(50);
 
       thirdElement.Coordinate.X.Should().Be(0);
-      thirdElement.Coordinate.Y.Should().Be(2);
+      thirdElement.Coordinate.Y.Should().Be(150);
 
       new Bitmap(firstElement.Value).Height.Should().Be(50);
       new Bitmap(firstElement.Value).Width.Should().Be(100);
@@ -155,9 +148,8 @@ namespace Tiles.Infrastructure.UnitTest.Grid
     {
       const string inputPath = @"./Layouts/06.bmp";
       var layout = Image.FromFile(inputPath);
-      var settings = new Mock<IGridServiceSettings>();
 
-      var sut = new GridService(settings.Object);
+      var sut = new GridService();
       var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements().ToArray();
       elements.Should().HaveCount(9);
