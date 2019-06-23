@@ -7,17 +7,20 @@ namespace Tiles.Infrastructure.Grid
   {
     public int Width { get; }
     public int Height { get; }
+    public int TileWidth { get; }
     private GridElement[] Elements { get; } = new GridElement[0];
 
-    public Grid(IEnumerable<GridElement> elements, int width, int height)
+    public Grid(IEnumerable<GridElement> elements, int tileWidth, int width, int height)
     {
+      TileWidth = tileWidth;
       Width = width;
       Height = height;
       Elements = elements.ToArray();
     }
 
-    public Grid()
+    public Grid(int tileWidth)
     {
+      TileWidth = tileWidth;
     }
 
     public IEnumerable<GridElement> GetElements() => 

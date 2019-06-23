@@ -22,7 +22,7 @@ namespace Tiles.Infrastructure.UnitTest.Lay
       {
         new GridElement(new Coordinate(0, 0), tile),
       };
-      var grid = new Infrastructure.Grid.Grid(gridElements, 100, 100);
+      var grid = new Infrastructure.Grid.Grid(gridElements, tile.Width, 100, 100);
       var result = tileService.LayTile(grid);
 
       var bitmap = new Bitmap(result);
@@ -56,7 +56,7 @@ namespace Tiles.Infrastructure.UnitTest.Lay
         new GridElement(new Coordinate(50, 0), fullTile),
         new GridElement(new Coordinate(150, 0), halfTile),
       };
-      var grid = new Infrastructure.Grid.Grid(gridElements, 200, 100);
+      var grid = new Infrastructure.Grid.Grid(gridElements, fullTile.Width, 200, 100);
       var result = tileService.LayTile(grid);
       
       result.Save("result.bmp", ImageFormat.Bmp);

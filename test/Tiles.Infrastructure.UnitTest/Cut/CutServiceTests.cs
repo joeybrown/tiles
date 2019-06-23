@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
 using Tiles.Infrastructure.Cut;
+using Tiles.Infrastructure.Grid;
 using Xunit;
 
 namespace Tiles.Infrastructure.UnitTest.Cut
@@ -28,7 +29,9 @@ namespace Tiles.Infrastructure.UnitTest.Cut
       var scoreCutService = new ScoreCutService(cutSettingsMock.Object, failureServiceMock.Object);
       var layout = new Bitmap(100, 100);
       var tile = new Bitmap(100, 100);
-      Func<Task> action = async () => await scoreCutService.CutTile(layout, tile);
+      var gridElement = new GridElement(new Coordinate(0, 0), tile);
+
+      Func<Task> action = async () => await scoreCutService.CutTile(layout, gridElement);
 
       action.Should().NotThrow("failure rate per cut is 0");
     }
@@ -49,7 +52,9 @@ namespace Tiles.Infrastructure.UnitTest.Cut
       var scoreCutService = new ScoreCutService(cutSettingsMock.Object, failureServiceMock.Object);
       var layout = new Bitmap(100, 100);
       var tile = new Bitmap(100, 100);
-      Func<Task> action = async () => await scoreCutService.CutTile(layout, tile);
+      var gridElement = new GridElement(new Coordinate(0, 0), tile);
+
+      Func<Task> action = async () => await scoreCutService.CutTile(layout, gridElement);
 
       action.Should().NotThrow("the first pass thru will not be successful but the second one will be successful.");
     }
@@ -68,7 +73,9 @@ namespace Tiles.Infrastructure.UnitTest.Cut
       var scoreCutService = new ScoreCutService(cutSettingsMock.Object, failureServiceMock.Object);
       var layout = new Bitmap(100, 100);
       var tile = new Bitmap(100, 100);
-      Func<Task> action = async () => await scoreCutService.CutTile(layout, tile);
+      var gridElement = new GridElement(new Coordinate(0,0), tile);
+
+      Func<Task> action = async () => await scoreCutService.CutTile(layout, gridElement);
 
       action.Should().Throw<Exception>("failure rate per cut is 1");
     }
@@ -79,9 +86,10 @@ namespace Tiles.Infrastructure.UnitTest.Cut
     {
       var layout = Image.FromFile(testCase.ImagePath);
       var tile = Image.FromFile(testCase.ImagePath);
-      var result = await testCase.Service.CutTile(layout, tile);
+      var gridElement = new GridElement(new Coordinate(0,0), tile);
+      var result = await testCase.Service.CutTile(layout, gridElement);
 
-      var bitmap = new Bitmap(result);
+      var bitmap = new Bitmap(result.Value);
       var pixelsAreEqual = new List<bool>();
 
       var layoutBitmap = new Bitmap(layout);
@@ -106,12 +114,13 @@ namespace Tiles.Infrastructure.UnitTest.Cut
     {
       var layout = Image.FromFile(@"./Layouts/07.bmp");
       var tile = Image.FromFile(@"./Tiles/01.bmp");
-      var result = await cutService.CutTile(layout, tile);
+      var gridElement = new GridElement(new Coordinate(0, 0), tile);
+      var result = await cutService.CutTile(layout, gridElement);
 
-      var bitmap = new Bitmap(result);
+      var bitmap = new Bitmap(result.Value);
       var pixelsAreEqual = new List<bool>();
 
-      var expected = new Bitmap(Image.FromFile(@"./Tiles/02.bmp"));
+      var expected = new Bitmap(Image.FromFile(@"./Tiles/04.bmp"));
 
       List<bool> Func(List<bool> accumulator, int x, int y)
       {

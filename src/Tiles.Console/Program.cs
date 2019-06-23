@@ -3,7 +3,6 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Tiles.Infrastructure;
 using Tiles.Infrastructure.Cut;
 using Tiles.Infrastructure.Grid;
@@ -64,23 +63,21 @@ namespace Tiles.Console
       const string layoutPath = @"./Layouts/00.bmp";
       var layout = new Bitmap(Image.FromFile(layoutPath)).Crop();
 
-      const string tilePath = @"./Tiles/wood.bmp";
+      const string tilePath = @"./Tiles/01.bmp";
       var tile = Image.FromFile(tilePath);
 
       var gridService = serviceProvider.GetService<IGridService>();
       var layoutGrid = gridService.Slice(layout, tile.Height);
 
-      //var cutServiceFactory = serviceProvider.GetService<ICutServiceFactory>();
-      var tileGridElements = layoutGrid.GetElements().Select(async x =>
+      var serviceFactory = serviceProvider.GetService<ICutServiceFactory>();
+      var cutTiles = layoutGrid.GetElements().Select(x =>
       {
-        var serviceFactory = serviceProvider.GetService<ICutServiceFactory>();
         var service = serviceFactory.Build(x.Value);
-        var cutTile = await service.CutTile(x.Value, tile);
-        return new GridElement(x.Coordinate, cutTile);
+        return service.CutTile(x.Value, new GridElement(x.Coordinate, tile));
       }).ToArray();
 
-      await Task.WhenAll(tileGridElements);
-      var tileGrid = new Grid(tileGridElements.Select(x => x.Result).ToArray(), layoutGrid.Width, layoutGrid.Height);
+      await Task.WhenAll(cutTiles);
+      var tileGrid = new Grid(cutTiles.Select(x => x.Result).ToArray(), tile.Width, layoutGrid.Width, layoutGrid.Height);
 
       var tileLayService = serviceProvider.GetService<ITileLayService>();
       var completed = tileLayService.LayTile(tileGrid);

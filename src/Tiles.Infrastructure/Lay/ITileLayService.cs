@@ -26,32 +26,21 @@ namespace Tiles.Infrastructure.Lay
 
     public Bitmap LayTile(Grid.Grid grid)
     {
-      var collector = new Bitmap(grid.Width, grid.Height);
-
-
-      Bitmap ApplyToAccumulator(Bitmap accumulator, int x, int y)
-      {
-        var invisible = Color.FromArgb(0, 0, 0, 0);
-        accumulator.SetPixel(x, y, invisible);
-        return accumulator;
-      }
-
-      collector.ForEachPixel(collector, ApplyToAccumulator, ApplyToAccumulator);
-      
-      return LayTile(grid.GetElements().ToArray(), collector);
+      var accumulator = new Bitmap(grid.Width, grid.Height);
+      return LayTile(grid.GetElements().ToArray(), accumulator);
     }
 
-    public Bitmap LayTile(GridElement[] gridElements, Bitmap collector)
+    public Bitmap LayTile(GridElement[] gridElements, Bitmap accumulator)
     {
       if (!gridElements.Any())
-        return collector;
+        return accumulator;
 
       var element = gridElements.First();
 
       var srcRectangle = new Rectangle(0, 0, element.Value.Width, element.Value.Height);
       var destRectangle = new Rectangle(element.Coordinate.X, element.Coordinate.Y, element.Value.Width, element.Value.Height);
-      var newCollector = CopyRegionIntoImage(new Bitmap(element.Value), srcRectangle, collector, destRectangle);
-      return LayTile(gridElements.Skip(1).ToArray(), newCollector);
+      var newAccumulator = CopyRegionIntoImage(new Bitmap(element.Value), srcRectangle, accumulator, destRectangle);
+      return LayTile(gridElements.Skip(1).ToArray(), newAccumulator);
     }
   }
 }

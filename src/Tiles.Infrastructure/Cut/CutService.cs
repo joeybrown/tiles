@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Drawing;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
+using Tiles.Infrastructure.Grid;
 
 namespace Tiles.Infrastructure.Cut
 {
@@ -9,7 +11,7 @@ namespace Tiles.Infrastructure.Cut
     /// <summary>
     ///   Cuts a tile according to the layout pattern.
     /// </summary>
-    Task<Image> CutTile(Image layout, Image tile);
+    Task<GridElement> CutTile(Image layout, GridElement gridElement);
   }
 
   public interface ICutServiceFactory
@@ -66,36 +68,39 @@ namespace Tiles.Infrastructure.Cut
       _failureService = failureService;
     }
 
-    public Task<Image> CutTile(Image layout, Image tile)
+    private static bool ShouldPadX(Image layout, GridElement tile)
     {
+      var adjustTileWidth = layout.Width < tile.Value.Width;
+      if (!adjustTileWidth)
+        return false;
+      return tile.Coordinate.X == 0;
+    }
+
+    private static bool ShouldPadY(Image layout, GridElement tile)
+    {
+      var adjustTileHeight = layout.Height < tile.Value.Height;
+      if (!adjustTileHeight)
+        return false;
+      return tile.Coordinate.Y == 0;
+    }
+
+    public Task<GridElement> CutTile(Image layout, GridElement tile)
+    {
+      var padX = ShouldPadX(layout, tile);
+      var padY = ShouldPadY(layout, tile);
       if (_settings.FailureRatePerCut == 0)
       {
-        return Task.FromResult(CopyTile(layout, tile));
+        var cutTile = CopyTile(layout, tile.Value, padX, padY);
+        var gridElement = new GridElement(tile.Coordinate, cutTile);
+        return Task.FromResult(gridElement);
       }
 
       var cutsPerFailure = (int) (1 / _settings.FailureRatePerCut);
-      return CutTile(layout, tile, cutsPerFailure, 0);
+      return CutTile(layout, tile, cutsPerFailure, 0, padX, padY);
     }
 
-    private static Image CopyTile(Image layout, Image tile)
-    {
-      var layoutBitmap = new Bitmap(layout);
-      var tileBitmap = new Bitmap(tile);
-
-      Bitmap IfWhite(Bitmap accumulator, int x, int y)
-        => accumulator;
-
-      Bitmap IfColored(Bitmap accumulator, int x, int y)
-      {
-        var pixel = tileBitmap.GetPixel(x, y);
-        accumulator.SetPixel(x, y, pixel);
-        return accumulator;
-      }
-
-      return layoutBitmap.ForEachPixel(layoutBitmap, IfWhite, IfColored);
-    }
-
-    private async Task<Image> CutTile(Image layout, Image tile, int cutPerFailure, int attempts)
+    private async Task<GridElement> CutTile(Image layout, GridElement tile, int cutsPerFailure, int attempts,
+      bool padX, bool padY)
     {
       if (attempts >= _settings.MaxFailures)
       {
@@ -106,25 +111,51 @@ namespace Tiles.Infrastructure.Cut
       await Task.Delay(_settings.CutTimeMilisecondDelay);
       if (_failureService.IsFailure(_settings.FailureRatePerCut))
       {
-        tile = await CutTile(layout, tile, cutPerFailure, attempts + 1);
+        tile = await CutTile(layout, tile, cutsPerFailure, attempts + 1, padX, padY);
         return tile;
       }
 
-      return CopyTile(layout, tile);
+      var cutTile = CopyTile(layout, tile.Value, padX, padY);
+      return new GridElement(tile.Coordinate, cutTile);
+    }
+
+
+    private static Image CopyTile(Image layout, Image tile, bool padX, bool padY)
+    {
+      var layoutBitmap = new Bitmap(layout);
+      var tileBitmap = new Bitmap(tile);
+
+      Bitmap IfWhite(Bitmap accumulator, int x, int y)
+        => accumulator;
+
+      Bitmap IfColored(Bitmap accumulator, int x, int y)
+      {
+        var xOffset = padX ? tile.Width - accumulator.Width : 0;
+        var yOffset = padY ? tile.Height - accumulator.Height : 0;
+
+        var tileX = x + xOffset;
+        var tileY = y + yOffset;
+        var pixel = tileBitmap.GetPixel(tileX, tileY);
+        accumulator.SetPixel(x, y, pixel);
+        return accumulator;
+      }
+
+      return layoutBitmap.ForEachPixel(layoutBitmap, IfWhite, IfColored);
     }
   }
 
   public interface IScoreCutService : ICutService
-  {
-  }
-
-  public class ScoreCutService : CutService, IScoreCutService
-  {
-    public ScoreCutService(ICutServiceSettings settings, IFailureService failureService) :
-      base(settings, failureService)
     {
     }
-  }
+
+    public class ScoreCutService : CutService, IScoreCutService
+    {
+      public ScoreCutService(ICutServiceSettings settings, IFailureService failureService) :
+        base(settings, failureService)
+      {
+      }
+    }
+  
 
   public interface IJigCutService : ICutService
   {

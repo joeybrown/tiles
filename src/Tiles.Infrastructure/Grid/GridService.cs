@@ -38,7 +38,7 @@ namespace Tiles.Infrastructure.Grid
       using (var bitmapLayout = new Bitmap(layout))
       {
         if (!bitmapLayout.HasAnyColor())
-          return new Grid();
+          return new Grid(tileWidth);
 
         var xSlices = SliceByTileWidth(layout.Width, tileWidth);
         var ySlices = SliceByTileWidth(layout.Height, tileWidth);
@@ -46,7 +46,7 @@ namespace Tiles.Infrastructure.Grid
         var xSets = GetSets(xSlices);
         var ySets = GetSets(ySlices);
 
-        var grid = BuildGrid(xSets, ySets, layout);
+        var grid = BuildGrid(xSets, ySets, layout, tileWidth);
         return grid;
       }
       
@@ -72,7 +72,7 @@ namespace Tiles.Infrastructure.Grid
       return bitmap.Clone(rectangle, bitmap.PixelFormat);
     }
     
-    private static Grid BuildGrid(IEnumerable<(int start, int stop)> xSets, IEnumerable<(int start, int stop)> ySets, Image image)
+    private static Grid BuildGrid(IEnumerable<(int start, int stop)> xSets, IEnumerable<(int start, int stop)> ySets, Image image, int tileWidth)
     {
       var elements = xSets.SelectMany(x =>
         ySets.Select(y =>
@@ -82,7 +82,7 @@ namespace Tiles.Infrastructure.Grid
           return new GridElement(gridElementCoordinates, gridElementValue);
         }));
       var bitmap = new Bitmap(image);
-      return new Grid(elements, bitmap.Width, bitmap.Height);
+      return new Grid(elements, tileWidth, bitmap.Width, bitmap.Height);
     }
   }
 }
