@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace Tiles.Infrastructure.Grid
 {
@@ -18,6 +19,13 @@ namespace Tiles.Infrastructure.Grid
 
   public class GridService : IGridService
   {
+    private readonly ILogger<GridService> _logger;
+
+    public GridService(ILogger<GridService> logger)
+    {
+      _logger = logger;
+    }
+
     private static IEnumerable<int> SliceBackward(int start, int step) => 
       start <= 0 ? new List<int>() : new List<int>{start}.Concat(SliceBackward(start-step, step)).ToList();
 
@@ -35,21 +43,21 @@ namespace Tiles.Infrastructure.Grid
     /// <inheritdoc cref="IGridService.Slice"/>
     public Grid Slice(Image layout, int tileWidth)
     {
-      using (var bitmapLayout = new Bitmap(layout))
-      {
-        if (!bitmapLayout.HasAnyColor())
-          return new Grid(tileWidth);
+      _logger.LogDebug("Starting to create layout grid");
+      var bitmapLayout = new Bitmap(layout);
+      if (!bitmapLayout.HasAnyColor())
+        return new Grid(tileWidth);
 
-        var xSlices = SliceByTileWidth(layout.Width, tileWidth);
-        var ySlices = SliceByTileWidth(layout.Height, tileWidth);
+      var xSlices = SliceByTileWidth(layout.Width, tileWidth);
+      var ySlices = SliceByTileWidth(layout.Height, tileWidth);
 
-        var xSets = GetSets(xSlices);
-        var ySets = GetSets(ySlices);
+      var xSets = GetSets(xSlices);
+      var ySets = GetSets(ySlices);
 
-        var grid = BuildGrid(xSets, ySets, layout, tileWidth);
-        return grid;
-      }
-      
+      var grid = BuildGrid(xSets, ySets, layout, tileWidth);
+      _logger.LogDebug("Done creating layout grid");
+
+      return grid;
     }
 
     private static IEnumerable<(int start, int stop)> GetSets(IReadOnlyCollection<int> slices)

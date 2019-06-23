@@ -1,6 +1,7 @@
 using System.Drawing;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Tiles.Infrastructure.Grid;
 using Xunit;
@@ -16,8 +17,8 @@ namespace Tiles.Infrastructure.UnitTest.Grid
     {
       const string inputPath = @"./Layouts/00.bmp";
       var layout = Image.FromFile(inputPath);
-
-      var sut = new GridService();
+      var loggerMock = new Mock<ILogger<GridService>>();
+      var sut = new GridService(loggerMock.Object);
       var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements();
 
@@ -30,7 +31,8 @@ namespace Tiles.Infrastructure.UnitTest.Grid
       const string inputPath = @"./Layouts/01.bmp";
       var layout = new Bitmap(Image.FromFile(inputPath)).Crop();
 
-      var sut = new GridService();
+      var loggerMock = new Mock<ILogger<GridService>>();
+      var sut = new GridService(loggerMock.Object);
       var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements().ToArray();
 
@@ -47,7 +49,8 @@ namespace Tiles.Infrastructure.UnitTest.Grid
       const string inputPath = @"./Layouts/02.bmp";
       var layout = Image.FromFile(inputPath);
 
-      var sut = new GridService();
+      var loggerMock = new Mock<ILogger<GridService>>();
+      var sut = new GridService(loggerMock.Object);
       var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements().ToArray();
 
@@ -64,7 +67,8 @@ namespace Tiles.Infrastructure.UnitTest.Grid
       const string inputPath = @"./Layouts/03.bmp";
       var layout = new Bitmap(Image.FromFile(inputPath)).Crop();
 
-      var sut = new GridService();
+      var loggerMock = new Mock<ILogger<GridService>>();
+      var sut = new GridService(loggerMock.Object);
       var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements().ToArray();
 
@@ -81,7 +85,8 @@ namespace Tiles.Infrastructure.UnitTest.Grid
       const string inputPath = @"./Layouts/04.bmp";
       var layout = Image.FromFile(inputPath);
 
-      var sut = new GridService();
+      var loggerMock = new Mock<ILogger<GridService>>();
+      var sut = new GridService(loggerMock.Object);
       var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements().ToArray();
       elements.Should().HaveCount(3);
@@ -115,7 +120,8 @@ namespace Tiles.Infrastructure.UnitTest.Grid
       const string inputPath = @"./Layouts/05.bmp";
       var layout = new Bitmap(Image.FromFile(inputPath)).Crop();
 
-      var sut = new GridService();
+      var loggerMock = new Mock<ILogger<GridService>>();
+      var sut = new GridService(loggerMock.Object);
       var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements().ToArray();
       elements.Should().HaveCount(3);
@@ -149,7 +155,8 @@ namespace Tiles.Infrastructure.UnitTest.Grid
       const string inputPath = @"./Layouts/06.bmp";
       var layout = new Bitmap(Image.FromFile(inputPath)).Crop();
 
-      var sut = new GridService();
+      var loggerMock = new Mock<ILogger<GridService>>();
+      var sut = new GridService(loggerMock.Object);
       var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements().ToArray();
       elements.Should().HaveCount(9);
@@ -161,7 +168,8 @@ namespace Tiles.Infrastructure.UnitTest.Grid
       const string inputPath = @"./Layouts/08.bmp";
       var layout = Image.FromFile(inputPath);
 
-      var sut = new GridService();
+      var loggerMock = new Mock<ILogger<GridService>>();
+      var sut = new GridService(loggerMock.Object);
       var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements();
 
