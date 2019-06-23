@@ -22,6 +22,19 @@
     <Content Include=".\Layouts\*.*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include=".\Tiles\*.*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Tiles\00.bmp" />
+    <None Remove="Tiles\01.bmp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Tiles\00.bmp" />
+    <Content Include="Tiles\01.bmp" />
   </ItemGroup>
 
 </Project>

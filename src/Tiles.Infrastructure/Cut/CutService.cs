@@ -130,9 +130,9 @@ namespace Tiles.Infrastructure.Cut
   {
   }
 
-  public class JigCutCutService : CutService, IJigCutService
+  public class JigCutService : CutService, IJigCutService
   {
-    public JigCutCutService(ICutServiceSettings settings, IFailureService failureService) :
+    public JigCutService(ICutServiceSettings settings, IFailureService failureService) :
       base(settings, failureService)
     {
     }
