@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Tiles.Infrastructure;
 using Tiles.Infrastructure.Cut;
 using Tiles.Infrastructure.Grid;
 using Tiles.Infrastructure.Lay;
@@ -17,19 +18,19 @@ namespace Tiles.Console
     {
       var scoreCutServiceSettings = new CutServiceSettings
       {
-        CutTimeMilisecondDelay = 1000,
+        CutTimeMilisecondDelay = 2000,
         FailureRatePerCut = 0,
         MaxFailures = 0
       };
       var jigCutServiceSettings = new CutServiceSettings
       {
-        CutTimeMilisecondDelay = 1000,
+        CutTimeMilisecondDelay = 4000,
         FailureRatePerCut = 0,
         MaxFailures = 0
       };
       var laserCutServiceSettings = new CutServiceSettings
       {
-        CutTimeMilisecondDelay = 1000,
+        CutTimeMilisecondDelay = 8000,
         FailureRatePerCut = 0,
         MaxFailures = 0
       };
@@ -61,30 +62,31 @@ namespace Tiles.Console
       //logger.LogDebug("Starting application");
 
       const string layoutPath = @"./Layouts/00.bmp";
-      var layout = Image.FromFile(layoutPath);
+      var layout = new Bitmap(Image.FromFile(layoutPath)).Crop();
 
-      const string tilePath = @"./Tiles/00.bmp";
+      const string tilePath = @"./Tiles/wood.bmp";
       var tile = Image.FromFile(tilePath);
 
       var gridService = serviceProvider.GetService<IGridService>();
       var layoutGrid = gridService.Slice(layout, tile.Height);
-      //
-      // //var cutServiceFactory = serviceProvider.GetService<ICutServiceFactory>();
-      // var tileGridElements = layoutGrid.GetElements().Select(async x =>
-      // {
-      //   var service = serviceProvider.GetService<IScoreCutService>();
-      //   var cutTile = await service.CutTile(x.Value, tile);
-      //   return new GridElement(x.Coordinate, cutTile);
-      // }).ToArray();
-      //
-      // await Task.WhenAll(tileGridElements);
-      // var tileGrid = new Grid(tileGridElements.Select(x=>x.Result).ToArray(), layoutGrid.Width, layoutGrid.Height);
-      //
-      // var tileLayService = serviceProvider.GetService<ITileLayService>();
-      // var completed = tileLayService.LayTile(tileGrid);
-      //
-      // completed.Save("result.bmp", ImageFormat.Bmp);
-      // //logger.LogDebug("Completed application");
+
+      //var cutServiceFactory = serviceProvider.GetService<ICutServiceFactory>();
+      var tileGridElements = layoutGrid.GetElements().Select(async x =>
+      {
+        var serviceFactory = serviceProvider.GetService<ICutServiceFactory>();
+        var service = serviceFactory.Build(x.Value);
+        var cutTile = await service.CutTile(x.Value, tile);
+        return new GridElement(x.Coordinate, cutTile);
+      }).ToArray();
+
+      await Task.WhenAll(tileGridElements);
+      var tileGrid = new Grid(tileGridElements.Select(x => x.Result).ToArray(), layoutGrid.Width, layoutGrid.Height);
+
+      var tileLayService = serviceProvider.GetService<ITileLayService>();
+      var completed = tileLayService.LayTile(tileGrid);
+
+      completed.Save("result.bmp", ImageFormat.Bmp);
+      //logger.LogDebug("Completed application");
     }
   }
 }

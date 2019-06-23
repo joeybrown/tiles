@@ -18,39 +18,6 @@ namespace Tiles.Infrastructure.Grid
 
   public class GridService : IGridService
   {
-    private static IEnumerable<ICoordinate> ToCoordinates(Bitmap layout)
-    {
-      List<ICoordinate> IfWhite(List<ICoordinate> coordinates, int x, int y)
-      {
-        coordinates.Add(new EmptyCoordinate(x, y));
-        return coordinates;
-      }
-
-      List<ICoordinate> IfColored(List<ICoordinate> coordinates, int x, int y)
-      {
-        coordinates.Add(new ColoredCoordinate(x, y));
-        return coordinates;
-      }
-
-      var accumulator = new List<ICoordinate>();
-
-
-      return layout.ForEachPixel(accumulator, IfWhite, IfColored);
-    }
-
-    private static Bitmap GetTrimmedArea(Bitmap layout, IEnumerable<ICoordinate> coordinates)
-    {
-      var coloredCoordinates = coordinates.Where(x => x is ColoredCoordinate).ToArray();
-      var xValues = coloredCoordinates.Select(x => x.X).ToArray();
-      var yValues = coloredCoordinates.Select(x => x.Y).ToArray();
-      var rectX = xValues.Min();
-      var rectY = yValues.Min();
-      var rectWidth = xValues.Max() + 1 - xValues.Min();
-      var rectHeight = yValues.Max() + 1 - yValues.Min();
-      var rectangle = new Rectangle(rectX, rectY, rectWidth, rectHeight);
-      return layout.Clone(rectangle, layout.PixelFormat);
-    }
-
     private static IEnumerable<int> SliceBackward(int start, int step) => 
       start <= 0 ? new List<int>() : new List<int>{start}.Concat(SliceBackward(start-step, step)).ToList();
 
@@ -62,7 +29,7 @@ namespace Tiles.Infrastructure.Grid
       var midPoint = limit / 2;
       var lowerSet = new []{0}.Concat( SliceBackward(midPoint - (tileWidth / 2), tileWidth).ToArray());
       var upperSet = SliceForward(midPoint + (tileWidth / 2), tileWidth, limit).ToArray().Concat(new []{limit});
-      return lowerSet.Concat(upperSet).ToArray();
+      return lowerSet.Concat(upperSet).OrderBy(x=>x).ToArray();
     }
 
     /// <inheritdoc cref="IGridService.Slice"/>
@@ -70,17 +37,11 @@ namespace Tiles.Infrastructure.Grid
     {
       using (var bitmapLayout = new Bitmap(layout))
       {
-        var coordinates = ToCoordinates(bitmapLayout).ToArray();
-        var hasArea = coordinates.Any(x => x is ColoredCoordinate);
-        if (!hasArea)
-        {
+        if (!bitmapLayout.HasAnyColor())
           return new Grid();
-        }
 
-        var trimmedLayout = GetTrimmedArea(bitmapLayout, coordinates);
-
-        var xSlices = SliceByTileWidth(trimmedLayout.Width, tileWidth);
-        var ySlices = SliceByTileWidth(trimmedLayout.Height, tileWidth);
+        var xSlices = SliceByTileWidth(layout.Width, tileWidth);
+        var ySlices = SliceByTileWidth(layout.Height, tileWidth);
 
         var xSets = GetSets(xSlices);
         var ySets = GetSets(ySlices);
@@ -105,8 +66,8 @@ namespace Tiles.Infrastructure.Grid
     private static Bitmap SliceImage(int xRectStart, int xRectStop, int yRectStart, int yRectStop, Image image)
     {
       var bitmap = new Bitmap(image);
-      var rectWidth = (xRectStop - xRectStart);
-      var rectHeight = (yRectStop - yRectStart);
+      var rectWidth = xRectStop - xRectStart;
+      var rectHeight = yRectStop - yRectStart;
       var rectangle = new Rectangle(xRectStart, yRectStart, rectWidth, rectHeight);
       return bitmap.Clone(rectangle, bitmap.PixelFormat);
     }

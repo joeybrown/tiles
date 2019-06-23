@@ -1,5 +1,8 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Tiles.Infrastructure.Grid;
 
 namespace Tiles.Infrastructure.Lay
@@ -24,6 +27,17 @@ namespace Tiles.Infrastructure.Lay
     public Bitmap LayTile(Grid.Grid grid)
     {
       var collector = new Bitmap(grid.Width, grid.Height);
+
+
+      Bitmap ApplyToAccumulator(Bitmap accumulator, int x, int y)
+      {
+        var invisible = Color.FromArgb(0, 0, 0, 0);
+        accumulator.SetPixel(x, y, invisible);
+        return accumulator;
+      }
+
+      collector.ForEachPixel(collector, ApplyToAccumulator, ApplyToAccumulator);
+      
       return LayTile(grid.GetElements().ToArray(), collector);
     }
 

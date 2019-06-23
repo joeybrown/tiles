@@ -28,7 +28,7 @@ namespace Tiles.Infrastructure.UnitTest.Grid
     public void Slice_Layout_With_Area_Smaller_Than_Tile()
     {
       const string inputPath = @"./Layouts/01.bmp";
-      var layout = Image.FromFile(inputPath);
+      var layout = new Bitmap(Image.FromFile(inputPath)).Crop();
 
       var sut = new GridService();
       var result = sut.Slice(layout, TileWidth);
@@ -62,7 +62,7 @@ namespace Tiles.Infrastructure.UnitTest.Grid
     public void Slice_Layout_With_Area_Same_Size_As_Tile_And_Layout_Larger_Than_Tile()
     {
       const string inputPath = @"./Layouts/03.bmp";
-      var layout = Image.FromFile(inputPath);
+      var layout = new Bitmap(Image.FromFile(inputPath)).Crop();
 
       var sut = new GridService();
       var result = sut.Slice(layout, TileWidth);
@@ -113,7 +113,7 @@ namespace Tiles.Infrastructure.UnitTest.Grid
     public void Slice_Layout_With_Area_Same_Size_As_Two_Tiles_Vertical()
     {
       const string inputPath = @"./Layouts/05.bmp";
-      var layout = Image.FromFile(inputPath);
+      var layout = new Bitmap(Image.FromFile(inputPath)).Crop();
 
       var sut = new GridService();
       var result = sut.Slice(layout, TileWidth);
@@ -147,7 +147,7 @@ namespace Tiles.Infrastructure.UnitTest.Grid
     public void Slice_Layout_With_Area_Shaped_Like_A_T()
     {
       const string inputPath = @"./Layouts/06.bmp";
-      var layout = Image.FromFile(inputPath);
+      var layout = new Bitmap(Image.FromFile(inputPath)).Crop();
 
       var sut = new GridService();
       var result = sut.Slice(layout, TileWidth);
@@ -165,7 +165,7 @@ namespace Tiles.Infrastructure.UnitTest.Grid
       var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements();
 
-      elements.Should().HaveCount(0);
+      elements.Should().HaveCount(15);
     }
   }
 }
