@@ -154,5 +154,18 @@ namespace Tiles.Infrastructure.UnitTest.Grid
       var elements = result.GetElements().ToArray();
       elements.Should().HaveCount(9);
     }
+
+    [Fact]
+    public void Slice_Complex_Layout()
+    {
+      const string inputPath = @"./Layouts/08.bmp";
+      var layout = Image.FromFile(inputPath);
+
+      var sut = new GridService();
+      var result = sut.Slice(layout, TileWidth);
+      var elements = result.GetElements();
+
+      elements.Should().HaveCount(0);
+    }
   }
 }
