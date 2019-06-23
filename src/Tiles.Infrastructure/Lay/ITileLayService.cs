@@ -6,8 +6,7 @@ namespace Tiles.Infrastructure.Lay
 {
   public interface ITileLayService
   {
-    Bitmap LayTile(GridElement[] elements);
-
+    Bitmap LayTile(Grid.Grid grid);
   }
 
   public class TileLayService : ITileLayService
@@ -19,15 +18,13 @@ namespace Tiles.Infrastructure.Lay
         grD.DrawImage(srcBitmap, destRegion, srcRegion, GraphicsUnit.Pixel);
       }
 
-      return destBitmap;
+      return new Bitmap(destBitmap);
     }
 
-    public Bitmap LayTile(GridElement[] gridElements)
+    public Bitmap LayTile(Grid.Grid grid)
     {
-      var width = gridElements.Max(x=>x.Coordinate.X);
-      var height = gridElements.Max(x=>x.Coordinate.Y);
-      var collector = new Bitmap(width, height);
-      return LayTile(gridElements, collector);
+      var collector = new Bitmap(grid.Width, grid.Height);
+      return LayTile(grid.GetElements().ToArray(), collector);
     }
 
     public Bitmap LayTile(GridElement[] gridElements, Bitmap collector)
@@ -38,11 +35,7 @@ namespace Tiles.Infrastructure.Lay
       var element = gridElements.First();
 
       var srcRectangle = new Rectangle(0, 0, element.Value.Width, element.Value.Height);
-
-      var destRectWidth = element.Coordinate.X + element.Value.Width;
-      var destRectHeight = element.Coordinate.Y + element.Value.Height;
-      var destRectangle = new Rectangle(element.Coordinate.X, element.Coordinate.Y, destRectWidth, destRectHeight);
-
+      var destRectangle = new Rectangle(element.Coordinate.X, element.Coordinate.Y, element.Value.Width, element.Value.Height);
       var newCollector = CopyRegionIntoImage(element.Value, srcRectangle, collector, destRectangle);
       return LayTile(gridElements.Skip(1).ToArray(), newCollector);
     }

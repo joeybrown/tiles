@@ -117,7 +117,8 @@ namespace Tiles.Infrastructure.Grid
           var gridElementCoordinates = new Coordinate(x.start, y.start);
           return new GridElement(gridElementCoordinates, gridElementValue);
         }));
-      return new Grid(elements);
+      var bitmap = new Bitmap(image);
+      return new Grid(elements, bitmap.Width, bitmap.Height);
     }
   }
 }

@@ -5,10 +5,14 @@ namespace Tiles.Infrastructure.Grid
 {
   public class Grid
   {
+    public int Width { get; }
+    public int Height { get; }
     private GridElement[] Elements { get; } = new GridElement[0];
 
-    public Grid(IEnumerable<GridElement> elements)
+    public Grid(IEnumerable<GridElement> elements, int width, int height)
     {
+      Width = width;
+      Height = height;
       Elements = elements.ToArray();
     }
 
