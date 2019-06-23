@@ -60,10 +60,11 @@ namespace Tiles.Console
       //  .CreateLogger<Program>();
       //logger.LogDebug("Starting application");
 
-      const string layoutPath = @"./Layouts/00.bmp";
+      const string layoutPath = @"./Layouts/01.bmp";
       var layout = new Bitmap(Image.FromFile(layoutPath)).Crop();
 
-      const string tilePath = @"./Tiles/01.bmp";
+      // const string tilePath = @"./Tiles/tangier.bmp";
+      const string tilePath = @"./Tiles/woodSquare.bmp";
       var tile = Image.FromFile(tilePath);
 
       var gridService = serviceProvider.GetService<IGridService>();
