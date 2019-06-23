@@ -4,13 +4,13 @@ namespace Tiles.Infrastructure.Grid
 {
     public class GridElement
     {
-      public GridElement(ICoordinate coordinate, Bitmap value)
+      public GridElement(ICoordinate coordinate, Image value)
         {
           Coordinate = coordinate;
           Value = value;
         }
 
       public ICoordinate Coordinate { get; }
-      public Bitmap Value { get;}
+      public Image Value { get;}
     }
 }

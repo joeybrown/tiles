@@ -36,7 +36,7 @@ namespace Tiles.Infrastructure.Lay
 
       var srcRectangle = new Rectangle(0, 0, element.Value.Width, element.Value.Height);
       var destRectangle = new Rectangle(element.Coordinate.X, element.Coordinate.Y, element.Value.Width, element.Value.Height);
-      var newCollector = CopyRegionIntoImage(element.Value, srcRectangle, collector, destRectangle);
+      var newCollector = CopyRegionIntoImage(new Bitmap(element.Value), srcRectangle, collector, destRectangle);
       return LayTile(gridElements.Skip(1).ToArray(), newCollector);
     }
   }

@@ -1,15 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29009.5
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7B612429-2B13-48D2-B1E3-4238CA4C68B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tiles.Infrastructure", "src\Tiles.Infrastructure\Tiles.Infrastructure.csproj", "{3420EC56-97CB-43A3-9F4D-A359A77A7823}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tiles.Infrastructure", "src\Tiles.Infrastructure\Tiles.Infrastructure.csproj", "{3420EC56-97CB-43A3-9F4D-A359A77A7823}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{46DBABA0-E9D8-46FD-82A8-147473675FB7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tiles.Infrastructure.UnitTest", "test\Tiles.Infrastructure.UnitTest\Tiles.Infrastructure.UnitTest.csproj", "{53323E18-65A0-49E2-83D0-8032AEE6152E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tiles.Infrastructure.UnitTest", "test\Tiles.Infrastructure.UnitTest\Tiles.Infrastructure.UnitTest.csproj", "{53323E18-65A0-49E2-83D0-8032AEE6152E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tiles.Console", "src\Tiles.Console\Tiles.Console.csproj", "{4F2D0BBA-2516-4296-8458-2761D520C4BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,9 +21,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{3420EC56-97CB-43A3-9F4D-A359A77A7823}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -48,9 +47,28 @@ Global
 		{53323E18-65A0-49E2-83D0-8032AEE6152E}.Release|x64.Build.0 = Release|Any CPU
 		{53323E18-65A0-49E2-83D0-8032AEE6152E}.Release|x86.ActiveCfg = Release|Any CPU
 		{53323E18-65A0-49E2-83D0-8032AEE6152E}.Release|x86.Build.0 = Release|Any CPU
+		{4F2D0BBA-2516-4296-8458-2761D520C4BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F2D0BBA-2516-4296-8458-2761D520C4BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F2D0BBA-2516-4296-8458-2761D520C4BF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4F2D0BBA-2516-4296-8458-2761D520C4BF}.Debug|x64.Build.0 = Debug|Any CPU
+		{4F2D0BBA-2516-4296-8458-2761D520C4BF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4F2D0BBA-2516-4296-8458-2761D520C4BF}.Debug|x86.Build.0 = Debug|Any CPU
+		{4F2D0BBA-2516-4296-8458-2761D520C4BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F2D0BBA-2516-4296-8458-2761D520C4BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F2D0BBA-2516-4296-8458-2761D520C4BF}.Release|x64.ActiveCfg = Release|Any CPU
+		{4F2D0BBA-2516-4296-8458-2761D520C4BF}.Release|x64.Build.0 = Release|Any CPU
+		{4F2D0BBA-2516-4296-8458-2761D520C4BF}.Release|x86.ActiveCfg = Release|Any CPU
+		{4F2D0BBA-2516-4296-8458-2761D520C4BF}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{3420EC56-97CB-43A3-9F4D-A359A77A7823} = {7B612429-2B13-48D2-B1E3-4238CA4C68B0}
 		{53323E18-65A0-49E2-83D0-8032AEE6152E} = {46DBABA0-E9D8-46FD-82A8-147473675FB7}
+		{4F2D0BBA-2516-4296-8458-2761D520C4BF} = {7B612429-2B13-48D2-B1E3-4238CA4C68B0}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {60DDE76F-9689-49CA-BC68-E10910F76565}
 	EndGlobalSection
 EndGlobal

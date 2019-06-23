@@ -68,24 +68,27 @@ namespace Tiles.Infrastructure.Grid
     /// <inheritdoc cref="IGridService.Slice"/>
     public Grid Slice(Image layout, int tileWidth)
     {
-      var bitmapLayout = new Bitmap(layout);
-      var coordinates = ToCoordinates(bitmapLayout).ToArray();
-      var hasArea = coordinates.Any(x => x is ColoredCoordinate);
-      if (!hasArea)
+      using (var bitmapLayout = new Bitmap(layout))
       {
-        return new Grid();
+        var coordinates = ToCoordinates(bitmapLayout).ToArray();
+        var hasArea = coordinates.Any(x => x is ColoredCoordinate);
+        if (!hasArea)
+        {
+          return new Grid();
+        }
+
+        var trimmedLayout = GetTrimmedArea(bitmapLayout, coordinates);
+
+        var xSlices = SliceByTileWidth(trimmedLayout.Width, tileWidth);
+        var ySlices = SliceByTileWidth(trimmedLayout.Height, tileWidth);
+
+        var xSets = GetSets(xSlices);
+        var ySets = GetSets(ySlices);
+
+        var grid = BuildGrid(xSets, ySets, layout);
+        return grid;
       }
-
-      var trimmedLayout = GetTrimmedArea(bitmapLayout, coordinates);
-
-      var xSlices = SliceByTileWidth(trimmedLayout.Width, tileWidth);
-      var ySlices = SliceByTileWidth(trimmedLayout.Height, tileWidth);
-
-      var xSets = GetSets(xSlices);
-      var ySets = GetSets(ySlices);
-
-      var grid = BuildGrid(xSets, ySets, layout);
-      return grid;
+      
     }
 
     private static IEnumerable<(int start, int stop)> GetSets(IReadOnlyCollection<int> slices)
