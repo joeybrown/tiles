@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using Tiles.Infrastructure.Grid;
+﻿using System.Drawing;
 
 namespace Tiles.Infrastructure
 {
@@ -15,9 +12,9 @@ namespace Tiles.Infrastructure
 
     public static T ForEachPixel<T>(this Bitmap bitmap, T accumulator, ApplyToAccumulator<T> ifWhite, ApplyToAccumulator<T> ifColored)
     {
-      foreach (var x in Enumerable.Range(0, bitmap.Width))
+      for(var x = 0; x < bitmap.Width; x++)
       {
-        foreach (var y in Enumerable.Range(0, bitmap.Height))
+        for(var y = 0; y < bitmap.Height; y++)
         {
           var color = bitmap.GetPixel(x, y);
           accumulator = color.IsWhite()
@@ -29,41 +26,58 @@ namespace Tiles.Infrastructure
       return accumulator;
     }
 
-    public static IEnumerable<ICoordinate> ToCoordinates(this Bitmap layout)
-    {
-      List<ICoordinate> IfWhite(List<ICoordinate> coordinates, int x, int y)
-      {
-        coordinates.Add(new EmptyCoordinate(x, y));
-        return coordinates;
-      }
-
-      List<ICoordinate> IfColored(List<ICoordinate> coordinates, int x, int y)
-      {
-        coordinates.Add(new ColoredCoordinate(x, y));
-        return coordinates;
-      }
-
-      var accumulator = new List<ICoordinate>();
-
-
-      return layout.ForEachPixel(accumulator, IfWhite, IfColored);
-    }
-
     public static bool HasAnyColor(this Bitmap bitmap)
     {
-      var coordinates = bitmap.ToCoordinates().ToArray();
-      return coordinates.Any(x => x is ColoredCoordinate);
+      bool IfWhite(bool accumulator, int x, int y) => accumulator;
+      bool IfColored(bool accumulator, int x, int y) => true;
+      const bool init = false;
+      var anyColored = ForEachPixel(bitmap, init, IfWhite, IfColored);
+      return anyColored;
+    }
+
+    public class RectangleBounds
+    {
+      public int? minX { get; set; }
+      public int? minY { get; set; }
+      public int? maxX { get; set; }
+      public int? maxY { get; set; }
     }
 
     public static Bitmap Crop(this Bitmap bitmap)
     {
-      var coloredCoordinates = bitmap.ToCoordinates().Where(x => x is ColoredCoordinate).ToArray();
-      var xValues = coloredCoordinates.Select(x => x.X).Distinct().ToArray();
-      var yValues = coloredCoordinates.Select(x => x.Y).Distinct().ToArray();
-      var rectX = xValues.Min();
-      var rectY = yValues.Min();
-      var rectWidth = xValues.Max() + 1 - xValues.Min();
-      var rectHeight = yValues.Max() + 1 - yValues.Min();
+      RectangleBounds IfWhite(RectangleBounds accumulator, int x, int y) => accumulator;
+
+      RectangleBounds IfColored(RectangleBounds accumulator, int x, int y)
+      {
+        if (accumulator.minX == null || x < accumulator.minX) { 
+          accumulator.minX = x;
+        }
+
+        if (accumulator.maxX == null || accumulator.maxX < x)
+        {
+          accumulator.maxX = x;
+        }
+
+        if (accumulator.minY == null || y < accumulator.minY)
+        {
+          accumulator.minY = y;
+        }
+
+        if (accumulator.maxY == null || accumulator.maxY < y)
+        {
+          accumulator.maxY = y;
+        }
+
+        return accumulator;
+      };
+
+      var init = new RectangleBounds();
+      var bounds = ForEachPixel(bitmap, init, IfWhite, IfColored);
+
+      var rectX = bounds.minX.Value;
+      var rectY = bounds.minY.Value;
+      var rectWidth = bounds.maxX.Value + 1 - bounds.minX.Value;
+      var rectHeight = bounds.maxY.Value + 1 - bounds.minY.Value;
       var rectangle = new Rectangle(rectX, rectY, rectWidth, rectHeight);
       return bitmap.Clone(rectangle, bitmap.PixelFormat);
     }
