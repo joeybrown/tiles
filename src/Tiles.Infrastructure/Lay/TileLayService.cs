@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
 using Tiles.Infrastructure.Grid;
 
 namespace Tiles.Infrastructure.Lay
@@ -14,6 +12,13 @@ namespace Tiles.Infrastructure.Lay
 
   public class TileLayService : ITileLayService
   {
+    private readonly ILogger<TileLayService> _logger;
+
+    public TileLayService(ILogger<TileLayService> logger)
+    {
+      _logger = logger;
+    }
+
     public static Bitmap CopyRegionIntoImage(Bitmap srcBitmap, Rectangle srcRegion, Bitmap destBitmap, Rectangle destRegion)
     {
       using (var grD = Graphics.FromImage(destBitmap))
@@ -26,8 +31,11 @@ namespace Tiles.Infrastructure.Lay
 
     public Bitmap LayTile(Grid.Grid grid)
     {
+      _logger.LogDebug("Laying tile...");
       var accumulator = new Bitmap(grid.Width, grid.Height);
-      return LayTile(grid.GetElements().ToArray(), accumulator);
+      var result = LayTile(grid.GetElements().ToArray(), accumulator);
+      _logger.LogDebug("Finished laying tiles.");
+      return result;
     }
 
     public Bitmap LayTile(GridElement[] gridElements, Bitmap accumulator)

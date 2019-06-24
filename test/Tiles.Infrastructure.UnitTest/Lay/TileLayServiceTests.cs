@@ -5,6 +5,8 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Tiles.Infrastructure.Grid;
 using Tiles.Infrastructure.Lay;
 using Xunit;
@@ -16,7 +18,8 @@ namespace Tiles.Infrastructure.UnitTest.Lay
     [Fact]
     public void Should_Lay_Single_Tile_Successfully()
     {
-      var tileService = new TileLayService();
+      var loggerMock = new Mock<ILogger<TileLayService>>();
+      var tileService = new TileLayService(loggerMock.Object);
       var tile = new Bitmap(Image.FromFile(@"./Tiles/01.bmp"));
       var gridElements = new[]
       {
@@ -47,7 +50,8 @@ namespace Tiles.Infrastructure.UnitTest.Lay
     [Fact]
     public void Should_Lay_Three_Tiles_Successfully()
     {
-      var tileService = new TileLayService();
+      var loggerMock = new Mock<ILogger<TileLayService>>();
+      var tileService = new TileLayService(loggerMock.Object);
       var fullTile = new Bitmap(Image.FromFile(@"./Tiles/01.bmp"));
       var halfTile = new Bitmap(Image.FromFile(@"./Tiles/03.bmp"));
       var gridElements = new[]

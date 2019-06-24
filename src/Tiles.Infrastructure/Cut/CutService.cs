@@ -114,7 +114,12 @@ namespace Tiles.Infrastructure.Cut
       }
 
       await Task.Delay(_settings.CutTimeMilisecondDelay);
-      if (_failureService.IsFailure(_settings.FailureRatePerCut))
+      //await Task.Delay(30000);
+
+      var isFailure = _failureService.IsFailure(_settings.FailureRatePerCut);
+      //var isFailure2 = new FailureService().IsFailure(_settings.FailureRatePerCut);
+
+      if (isFailure)
       {
         tile = await CutTile(layout, tile, cutsPerFailure, attempts + 1, padX, padY);
         return tile;

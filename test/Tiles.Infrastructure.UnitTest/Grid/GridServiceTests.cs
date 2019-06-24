@@ -1,5 +1,9 @@
+using System;
 using System.Drawing;
+using System.Drawing.Printing;
 using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -15,27 +19,34 @@ namespace Tiles.Infrastructure.UnitTest.Grid
     [Fact]
     public void Slice_Layout_With_No_Area()
     {
+      // Arrange
       const string inputPath = @"./Layouts/00.bmp";
       var layout = Image.FromFile(inputPath);
       var loggerMock = new Mock<ILogger<GridService>>();
       var sut = new GridService(loggerMock.Object);
+
+      // Act
       var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements();
 
+      // Assert
       elements.Should().HaveCount(0);
     }
 
     [Fact]
     public void Slice_Layout_With_Area_Smaller_Than_Tile()
     {
+      // Arrange
       const string inputPath = @"./Layouts/01.bmp";
       var layout = new Bitmap(Image.FromFile(inputPath)).Crop();
-
       var loggerMock = new Mock<ILogger<GridService>>();
       var sut = new GridService(loggerMock.Object);
+
+      // Act
       var result = sut.Slice(layout, TileWidth);
       var elements = result.GetElements().ToArray();
 
+      // Assert
       elements.Should().HaveCount(1);
       elements.First().Coordinate.X.Should().Be(0);
       elements.First().Coordinate.Y.Should().Be(0);
