@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -55,18 +56,27 @@ namespace Tiles.Console
 
   public class Program
   {
-    public virtual ServiceProvider BuildServiceProvider()
+    public static Task Main(string[] args)
     {
       var serviceProvider = new ServiceCollection()
         .AddServices()
         .BuildServiceProvider();
-      return serviceProvider;
+
+      return Main(args, serviceProvider);
     }
 
-    public static async Task Main(string[] args)
+    public static Task Main(string[] args, Action<IServiceCollection> serviceOverrides)
     {
-      var serviceProvider = new Program().BuildServiceProvider();
+      var services = new ServiceCollection()
+        .AddServices();
+      serviceOverrides.Invoke(services);
+      var serviceProvider = services.BuildServiceProvider();
 
+      return Main(args, serviceProvider);
+    }
+
+    public static async Task Main(string[] args, ServiceProvider serviceProvider)
+    {
       var layoutPath = args[0];
       var layout = new Bitmap(Image.FromFile(layoutPath)).Crop();
 
@@ -78,6 +88,7 @@ namespace Tiles.Console
       var dest = args[2];
       completed.Save(dest, ImageFormat.Bmp);
     }
+
 
     private static async Task<Bitmap> LayTile(IServiceProvider serviceProvider, Image tile, Image layout)
     {
