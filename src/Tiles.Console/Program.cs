@@ -13,25 +13,25 @@ using Tiles.Infrastructure.Lay;
 
 namespace Tiles.Console
 {
-  class Program
+  public static class ServiceCollectionExtensions
   {
-    static async Task Main(string[] args)
+    public static IServiceCollection AddServices(this IServiceCollection services)
     {
       var scoreCutServiceSettings = new CutServiceSettings
       {
-        CutTimeMilisecondDelay = 4000,
+        CutTimeMilisecondDelay = 1000,
         FailureRatePerCut = 0,
         MaxFailures = 0
       };
       var jigCutServiceSettings = new CutServiceSettings
       {
-        CutTimeMilisecondDelay = 8000,
+        CutTimeMilisecondDelay = 2000,
         FailureRatePerCut = 0,
         MaxFailures = 0
       };
       var laserCutServiceSettings = new CutServiceSettings
       {
-        CutTimeMilisecondDelay = 16000,
+        CutTimeMilisecondDelay = 4000,
         FailureRatePerCut = 0,
         MaxFailures = 0
       };
@@ -43,36 +43,44 @@ namespace Tiles.Console
 
       var failureService = failureServiceProvider.GetService<IFailureService>();
 
-      var serviceProvider = new ServiceCollection()
+
+      services
         .AddLogging(configure => configure.AddConsole())
-        .Configure<LoggerFilterOptions>(options =>
-        {
-          options.MinLevel = LogLevel.Debug;
-        })
+        .Configure<LoggerFilterOptions>(options => { options.MinLevel = LogLevel.Debug; })
         .AddSingleton<IGridService, GridService>()
         .AddSingleton<ICutServiceFactory, CutServiceFactory>()
-        .AddSingleton(x=>
+        .AddSingleton(x =>
           (IScoreCutService) new ScoreCutService(scoreCutServiceSettings, failureService))
         .AddSingleton(x =>
-          (IJigCutService)new JigCutService(jigCutServiceSettings, failureService))
+          (IJigCutService) new JigCutService(jigCutServiceSettings, failureService))
         .AddSingleton(x =>
-          (ILaserCutService)new LaserCutService(laserCutServiceSettings, failureService)).AddSingleton<ITileLayService, TileLayService>()
+          (ILaserCutService) new LaserCutService(laserCutServiceSettings, failureService))
+        .AddSingleton<ITileLayService, TileLayService>();
+      return services;
+    }
+  }
+
+  public class Program
+  {
+    public virtual ServiceProvider BuildServiceProvider()
+    {
+      var serviceProvider = new ServiceCollection()
+        .AddServices()
         .BuildServiceProvider();
+      return serviceProvider;
+    }
 
-      var logger = serviceProvider.GetService<ILogger<Program>>();
+    public static async Task Main(string[] args)
+    {
+      var serviceProvider = new Program().BuildServiceProvider();
 
-      logger.LogInformation($"[{DateTime.Now.ToString("HH:mm:ss.fffffff")}] Starting Service.");
-
-      logger.LogInformation($"[{DateTime.Now.ToString("HH:mm:ss.fffffff")}] Cropping Image...");
-
-      const string layoutPath = @"./Layouts/01.bmp";
+      var layoutPath = args[0];
       var layout = new Bitmap(Image.FromFile(layoutPath)).Crop();
 
-      logger.LogInformation($"[{DateTime.Now.ToString("HH:mm:ss.fffffff")}] Cropped Image.");
+      var tilePath = args[1];
+      var tile = new Bitmap(Image.FromFile(tilePath));
 
-      // const string tilePath = @"./Tiles/tangier.bmp";
-      const string tilePath = @"./Tiles/woodSquare.bmp";
-      var tile = Image.FromFile(tilePath);
+      var logger = serviceProvider.GetService<ILogger<Program>>();
 
       logger.LogInformation($"[{DateTime.Now.ToString("HH:mm:ss.fffffff")}] Creating Grid...");
       var gridService = serviceProvider.GetService<IGridService>();
@@ -84,7 +92,7 @@ namespace Tiles.Console
       var cutTiles = layoutGrid.GetElements().Select(x =>
       {
         var service = serviceFactory.Build(x.Value);
-        return service.CutTile(x.Value, new GridElement(x.Coordinate, tile));
+        return service.CutTile(new Bitmap(x.Value), new GridElement(x.Coordinate, new Bitmap(tile)));
       }).ToArray();
 
       await Task.WhenAll(cutTiles);
@@ -97,7 +105,8 @@ namespace Tiles.Console
       var completed = tileLayService.LayTile(tileGrid);
       logger.LogInformation($"[{DateTime.Now.ToString("HH:mm:ss.fffffff")}] Laid Tiles.");
 
-      completed.Save("result.bmp", ImageFormat.Bmp);
+      var dest = args[2];
+      completed.Save(dest, ImageFormat.Bmp);
     }
   }
 }

@@ -84,19 +84,21 @@ namespace Tiles.Infrastructure.Cut
       return tile.Coordinate.Y == 0;
     }
 
-    public Task<GridElement> CutTile(Image layout, GridElement tile)
+    public async Task<GridElement> CutTile(Image layout, GridElement tile)
     {
       var padX = ShouldPadX(layout, tile);
       var padY = ShouldPadY(layout, tile);
       if (_settings.FailureRatePerCut == 0)
       {
+        await Task.Delay(_settings.CutTimeMilisecondDelay);
         var cutTile = CopyTile(layout, tile.Value, padX, padY);
         var gridElement = new GridElement(tile.Coordinate, cutTile);
-        return Task.FromResult(gridElement);
+        return gridElement;
       }
 
       var cutsPerFailure = (int) (1 / _settings.FailureRatePerCut);
-      return CutTile(layout, tile, cutsPerFailure, 0, padX, padY);
+      var result = await CutTile(layout, tile, cutsPerFailure, 0, padX, padY);
+      return result;
     }
 
     private async Task<GridElement> CutTile(Image layout, GridElement tile, int cutsPerFailure, int attempts,
