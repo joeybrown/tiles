@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Tiles.Infrastructure.Cut;
 using Tiles.Infrastructure.Grid;
@@ -17,7 +17,7 @@ namespace Tiles.Infrastructure.UnitTest.Cut
     [Fact]
     public void Score_Cut_With_Failure_Rate_Zero_Should_Not_Fail()
     {
-      var cutSettingsMock = new Mock<ICutServiceSettings>();
+      var cutSettingsMock = new Mock<IScoreCutServiceSettings>();
       cutSettingsMock.SetupGet(x => x.CutTimeMilisecondDelay).Returns(0);
       cutSettingsMock.SetupGet(x => x.FailureRatePerCut).Returns(0);
       cutSettingsMock.SetupGet(x => x.MaxFailures).Returns(0);
@@ -27,7 +27,9 @@ namespace Tiles.Infrastructure.UnitTest.Cut
         .Setup(x => x.IsFailure(It.IsAny<decimal>()))
         .Returns(true);
 
-      var scoreCutService = new ScoreCutService(cutSettingsMock.Object, failureServiceMock.Object);
+      var loggerMock = new Mock<ILogger<ScoreCutService>>();
+
+      var scoreCutService = new ScoreCutService(cutSettingsMock.Object, failureServiceMock.Object, loggerMock.Object);
       var layout = new Bitmap(100, 100);
       var tile = new Bitmap(100, 100);
       var gridElement = new GridElement(new Coordinate(0, 0), tile);
@@ -40,7 +42,7 @@ namespace Tiles.Infrastructure.UnitTest.Cut
     [Fact]
     public void Score_Cut_With_Failure_Rate_Should_Not_Fail()
     {
-      var cutSettingsMock = new Mock<ICutServiceSettings>();
+      var cutSettingsMock = new Mock<IScoreCutServiceSettings>();
       cutSettingsMock.SetupGet(x => x.CutTimeMilisecondDelay).Returns(0);
       cutSettingsMock.SetupGet(x => x.FailureRatePerCut).Returns(.5m);
       cutSettingsMock.SetupGet(x => x.MaxFailures).Returns(2);
@@ -50,7 +52,9 @@ namespace Tiles.Infrastructure.UnitTest.Cut
         .Returns(true)
         .Returns(false);
 
-      var scoreCutService = new ScoreCutService(cutSettingsMock.Object, failureServiceMock.Object);
+      var loggerMock = new Mock<ILogger<ScoreCutService>>();
+
+      var scoreCutService = new ScoreCutService(cutSettingsMock.Object, failureServiceMock.Object, loggerMock.Object);
       var layout = new Bitmap(100, 100);
       var tile = new Bitmap(100, 100);
       var gridElement = new GridElement(new Coordinate(0, 0), tile);
@@ -63,7 +67,7 @@ namespace Tiles.Infrastructure.UnitTest.Cut
     [Fact]
     public void Score_Cut_With_Too_High_Failure_Rate_Should_Fail()
     {
-      var cutSettingsMock = new Mock<ICutServiceSettings>();
+      var cutSettingsMock = new Mock<IScoreCutServiceSettings>();
       cutSettingsMock.SetupGet(x => x.CutTimeMilisecondDelay).Returns(0);
       cutSettingsMock.SetupGet(x => x.FailureRatePerCut).Returns(1);
       cutSettingsMock.SetupGet(x => x.MaxFailures).Returns(1);
@@ -71,7 +75,9 @@ namespace Tiles.Infrastructure.UnitTest.Cut
       var failureServiceMock = new Mock<IFailureService>();
       failureServiceMock.Setup(x => x.IsFailure(It.IsAny<decimal>())).Returns(true);
 
-      var scoreCutService = new ScoreCutService(cutSettingsMock.Object, failureServiceMock.Object);
+      var loggerMock = new Mock<ILogger<ScoreCutService>>();
+
+      var scoreCutService = new ScoreCutService(cutSettingsMock.Object, failureServiceMock.Object, loggerMock.Object);
       var layout = new Bitmap(100, 100);
       var tile = new Bitmap(100, 100);
       var gridElement = new GridElement(new Coordinate(0,0), tile);
@@ -134,24 +140,49 @@ namespace Tiles.Infrastructure.UnitTest.Cut
       pixelsAreEqual = bitmap.ForEachPixel(pixelsAreEqual, Func, Func);
 
       pixelsAreEqual.Count.Should().Be(5000, "there are 5000 pixels");
-      pixelsAreEqual.Any(x => !x).Should().BeFalse("all pixels should be equivalent");
+      var anyAreFalse = pixelsAreEqual.Any(x => !x);
+      anyAreFalse.Should().BeFalse("all pixels should be equivalent");
     }
 
     public static IEnumerable<object[]> CutServices
     {
       get
       {
-        var cutSettingsMock = new Mock<ICutServiceSettings>();
-        cutSettingsMock.SetupGet(x => x.CutTimeMilisecondDelay).Returns(0);
-        cutSettingsMock.SetupGet(x => x.FailureRatePerCut).Returns(0);
+        var scoreCutServiceSettingsMock = new Mock<IScoreCutServiceSettings>();
+        scoreCutServiceSettingsMock.SetupGet(x => x.CutTimeMilisecondDelay).Returns(0);
+        scoreCutServiceSettingsMock.SetupGet(x => x.FailureRatePerCut).Returns(0);
+
+        var jigCutServiceSettingsMock = new Mock<IJigCutServiceSettings>();
+        jigCutServiceSettingsMock.SetupGet(x => x.CutTimeMilisecondDelay).Returns(0);
+        jigCutServiceSettingsMock.SetupGet(x => x.FailureRatePerCut).Returns(0);
+
+        var laserCutServiceSettingsMock = new Mock<ILaserCutServiceSettings>();
+        laserCutServiceSettingsMock.SetupGet(x => x.CutTimeMilisecondDelay).Returns(0);
+        laserCutServiceSettingsMock.SetupGet(x => x.FailureRatePerCut).Returns(0);
 
         var failureServiceMock = new Mock<IFailureService>();
         failureServiceMock.Setup(x => x.IsFailure(It.IsAny<decimal>())).Returns(true);
+
+        var scoreCutLoggerMock = new Mock<ILogger<ScoreCutService>>();
+        var jigCutLoggerMock = new Mock<ILogger<JigCutService>>();
+        var laserCutLoggerMock = new Mock<ILogger<LaserCutService>>();
+
         return new[]
         {
-          new[] {new ScoreCutService(cutSettingsMock.Object, failureServiceMock.Object)},
-          new[] {new JigCutService(cutSettingsMock.Object, failureServiceMock.Object)},
-          new object[] {new LaserCutService(cutSettingsMock.Object, failureServiceMock.Object)}
+          new[]
+          {
+            new ScoreCutService(scoreCutServiceSettingsMock.Object, failureServiceMock.Object,
+              scoreCutLoggerMock.Object)
+          },
+          new[]
+          {
+            new JigCutService(jigCutServiceSettingsMock.Object, failureServiceMock.Object, jigCutLoggerMock.Object)
+          },
+          new object[]
+          {
+            new LaserCutService(laserCutServiceSettingsMock.Object, failureServiceMock.Object,
+              laserCutLoggerMock.Object)
+          }
         };
       }
     }

@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Tiles.Infrastructure.Grid;
 
 namespace Tiles.Infrastructure.Cut
@@ -84,8 +85,10 @@ namespace Tiles.Infrastructure.Cut
       return tile.Coordinate.Y == 0;
     }
 
-    public async Task<GridElement> CutTile(Image layout, GridElement tile)
+
+    public virtual async Task<GridElement> CutTile(Image layout, GridElement tile)
     {
+
       var padX = ShouldPadX(layout, tile);
       var padY = ShouldPadY(layout, tile);
       if (_settings.FailureRatePerCut == 0)
@@ -152,12 +155,23 @@ namespace Tiles.Infrastructure.Cut
 
     public class ScoreCutService : CutService, IScoreCutService
     {
-      public ScoreCutService(ICutServiceSettings settings, IFailureService failureService) :
+      private readonly ILogger<ScoreCutService> _logger;
+
+      public ScoreCutService(IScoreCutServiceSettings settings, IFailureService failureService, ILogger<ScoreCutService> logger) :
         base(settings, failureService)
       {
+        _logger = logger;
       }
-    }
-  
+
+      public override async Task<GridElement> CutTile(Image layout, GridElement tile)
+      {
+        _logger.LogDebug($"Cutting tile with the {nameof(ScoreCutService)}");
+         var result = await base.CutTile(layout, tile);
+        _logger.LogDebug($"Finished cutting tile with the {nameof(ScoreCutService)}");
+        return result;
+      }
+  }
+
 
   public interface IJigCutService : ICutService
   {
@@ -165,9 +179,20 @@ namespace Tiles.Infrastructure.Cut
 
   public class JigCutService : CutService, IJigCutService
   {
-    public JigCutService(ICutServiceSettings settings, IFailureService failureService) :
+    private readonly ILogger<JigCutService> _logger;
+
+    public JigCutService(IJigCutServiceSettings settings, IFailureService failureService, ILogger<JigCutService> logger) :
       base(settings, failureService)
     {
+      _logger = logger;
+    }
+
+    public override async Task<GridElement> CutTile(Image layout, GridElement tile)
+    {
+      _logger.LogDebug($"Cutting tile with the {nameof(JigCutService)}");
+      var result = await base.CutTile(layout, tile);
+      _logger.LogDebug($"Finished cutting tile with the {nameof(JigCutService)}");
+      return result;
     }
   }
 
@@ -177,9 +202,20 @@ namespace Tiles.Infrastructure.Cut
 
   public class LaserCutService : CutService, ILaserCutService
   {
-    public LaserCutService(ICutServiceSettings settings, IFailureService failureService) :
+    private readonly ILogger<LaserCutService> _logger;
+
+    public LaserCutService(ILaserCutServiceSettings settings, IFailureService failureService, ILogger<LaserCutService> logger) :
       base(settings, failureService)
     {
+      _logger = logger;
+    }
+
+    public override async Task<GridElement> CutTile(Image layout, GridElement tile)
+    {
+      _logger.LogDebug($"Cutting tile with the {nameof(LaserCutService)}");
+      var result = await base.CutTile(layout, tile);
+      _logger.LogDebug($"Finished cutting tile with the {nameof(LaserCutService)}");
+      return result;
     }
   }
 }

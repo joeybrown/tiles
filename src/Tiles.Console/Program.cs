@@ -17,45 +17,38 @@ namespace Tiles.Console
   {
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
-      var scoreCutServiceSettings = new CutServiceSettings
+      var scoreCutServiceSettings = (IScoreCutServiceSettings) new CutServiceSettings
       {
         CutTimeMilisecondDelay = 1000,
         FailureRatePerCut = 0,
         MaxFailures = 0
       };
-      var jigCutServiceSettings = new CutServiceSettings
+      var jigCutServiceSettings = (IJigCutServiceSettings) new CutServiceSettings
       {
         CutTimeMilisecondDelay = 2000,
         FailureRatePerCut = 0,
         MaxFailures = 0
       };
-      var laserCutServiceSettings = new CutServiceSettings
+      var laserCutServiceSettings = (ILaserCutServiceSettings) new CutServiceSettings
       {
         CutTimeMilisecondDelay = 4000,
         FailureRatePerCut = 0,
         MaxFailures = 0
       };
 
-
-      var failureServiceProvider = new ServiceCollection()
-        .AddSingleton<IFailureService, FailureService>()
-        .BuildServiceProvider();
-
-      var failureService = failureServiceProvider.GetService<IFailureService>();
-
-
       services
         .AddLogging(configure => configure.AddConsole())
         .Configure<LoggerFilterOptions>(options => { options.MinLevel = LogLevel.Debug; })
         .AddSingleton<IGridService, GridService>()
         .AddSingleton<ICutServiceFactory, CutServiceFactory>()
-        .AddSingleton(x =>
-          (IScoreCutService) new ScoreCutService(scoreCutServiceSettings, failureService))
-        .AddSingleton(x =>
-          (IJigCutService) new JigCutService(jigCutServiceSettings, failureService))
-        .AddSingleton(x =>
-          (ILaserCutService) new LaserCutService(laserCutServiceSettings, failureService))
-        .AddSingleton<ITileLayService, TileLayService>();
+        .AddSingleton<IFailureService, FailureService>()
+        .AddSingleton(x => scoreCutServiceSettings)
+        .AddSingleton(x => jigCutServiceSettings)
+        .AddSingleton(x => laserCutServiceSettings)
+        .AddSingleton<IScoreCutService, ScoreCutService>()
+        .AddSingleton<IJigCutService, JigCutService>()
+        .AddSingleton<ITileLayService, TileLayService>()
+        .AddSingleton<ILaserCutService, LaserCutService>();
       return services;
     }
   }
